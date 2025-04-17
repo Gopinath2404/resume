@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Seeker Dashboard</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #fafafc, #5f6565, #edefef);
+            color: #0a0202;
+            line-height: 1.6;
+            transition: background 0.3s ease;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background-color: #c1c1c1;
+            background: linear-gradient(135deg, #fafafc, #5f6565, #edefef);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #191a1c;
+            display: flex;
+            align-items: center;
+        }
+        
+        .menu-toggles {
+            font-size: 1.8em;
+            cursor: pointer;
+            margin-right: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            height: 1.5em;
+        }
+        
+        .menu-toggles span {
+            display: block;
+            width: 5px;
+            height: 5px;
+            background-color: #191a1c;
+            border-radius: 50%;
+        }
+        
+        .about-btn {
+            margin-left: auto;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .about-btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .dashboard {
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .search-container {
+            margin: 20px auto;
+            text-align: center;
+        }
+        
+        .search-container input {
+            padding: 10px;
+            width: 50%;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        .jobs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .job-card {
+            background-color: #c0c0c0;
+            background: linear-gradient(135deg, #c1c1c3, #9a9b9b, #ced0d0);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(247, 245, 245, 0.938);
+        }
+        
+        .click-here-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .click-here-btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .no-background {
+            background: none !important;
+        }
+        
+        .sidebar {
+            height: 80%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+        
+        .sidebar a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+        
+        .sidebar a:hover {
+            color: #f1f1f1;
+        }
+        
+        .sidebar .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+        
+        #main {
+            transition: margin-left .5s;
+            padding: 16px;
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+</head>
+
+<body id="body">
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+        <a href="placement rate.html">Placement Rating</a>
+        <a href="mentorship.html">Mentorship</a>
+        <a href="chat.html">chatbot</a>
+        <a href="resume.html">Resume</a>
+    </div>
+
+    <div class="navbar">
+        <div class="logo">
+            <div class="menu-toggles" onclick="openNav()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            Company Details
+        </div>
+        <a href="about.html" class="about-btn">About Us</a>
+    </div>
+
+    <div id="main" class="dashboard">
+        <h2>Welcome To Your Website</h2>
+        <p>Your future begins here – explore career opportunities and connect with your Alumni!</p>
+
+        <div class="search-container">
+            <input type="text" id="searchBatch" placeholder="Search by batch..." oninput="searchBatch()" onkeydown="checkEnterKey(event)">
+        </div>
+
+        <div class="jobs" id="jobListings"></div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAiSIvkXHbc7DMWXctMCR240lY3QTo3DPI",
+            authDomain: "alumini-project-92d35.firebaseapp.com",
+            projectId: "alumini-project-92d35",
+            storageBucket: "alumini-project-92d35.appspot.com",
+            messagingSenderId: "824256308559",
+            appId: "1:824256308559:web:e3301cc6e36b381a7cd13a",
+            measurementId: "G-VPN8QGJTGY"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function displayCompanies(uniqueCompanies) {
+            const jobListings = document.getElementById('jobListings');
+            jobListings.innerHTML = '';
+
+            if (uniqueCompanies.length === 0) {
+                jobListings.innerHTML = `<p>No companies found. Please check back later.</p>`;
+                return;
+            }
+
+            uniqueCompanies.forEach(company => {
+                const jobCard = document.createElement('div');
+                jobCard.classList.add('job-card');
+                jobCard.innerHTML = `
+                    <h4>${company}</h4>
+                    <a href="click.html?company=${encodeURIComponent(company)}">
+                        <button class="click-here-btn">Click Here</button>
+                    </a>
+                `;
+                jobListings.appendChild(jobCard);
+            });
+        }
+
+        function fetchUniqueCompanies() {
+            db.collection("jobs").get()
+                .then((querySnapshot) => {
+                    const companies = new Set();
+                    querySnapshot.forEach((doc) => {
+                        const jobData = doc.data();
+                        if (jobData.company) {
+                            companies.add(jobData.company);
+                        }
+                    });
+                    displayCompanies([...companies]);
+                })
+                .catch((error) => {
+                    console.error("Error fetching companies: ", error);
+                    document.getElementById('jobListings').innerHTML = `<p>Error loading companies. Please try again later.</p>`;
+                });
+        }
+
+        function checkEnterKey(event) {
+            if (event.key === 'Enter') {
+                searchBatch();
+            }
+        }
+
+        function searchBatch() {
+            const searchValue = document.getElementById('searchBatch').value.trim().toLowerCase();
+            const body = document.getElementById('body');
+            const jobListings = document.getElementById('jobListings');
+            jobListings.innerHTML = '';
+
+            if (searchValue === '') {
+                body.classList.remove('no-background');
+                fetchUniqueCompanies();
+                return;
+            }
+
+            const results = new Map();
+
+            db.collection("jobs").where("batch", "==", searchValue).get()
+                .then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        results.set(doc.id, doc.data());
+                    });
+                    return db.collection("jobs").where("fullName", "==", searchValue).get();
+                })
+                .then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        results.set(doc.id, doc.data());
+                    });
+
+                    if (results.size === 0) {
+                        jobListings.innerHTML = `<p>No students found for "${searchValue}".</p>`;
+                        return;
+                    }
+
+                    body.classList.add('no-background');
+                    results.forEach((student, docId) => {
+                        const studentCard = document.createElement('div');
+                        studentCard.classList.add('job-card');
+                        studentCard.innerHTML = `
+                            <h4>${student.fullName}</h4>
+                            <p><strong>Company:</strong> ${student.company}</p>
+                            <p><strong>Department:</strong> ${student.department}</p>
+                            <button class="click-here-btn" onclick="viewStudentDetails('${docId}', '${student.company}', '${student.department}')">Click Here</button>
+                        `;
+                        jobListings.appendChild(studentCard);
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error fetching students: ", error);
+                    jobListings.innerHTML = `<p>Error loading students. Please try again later.</p>`;
+                });
+        }
+
+        function viewStudentDetails(studentId, company, department) {
+            window.location.href = `click.html?studentId=${studentId}&company=${encodeURIComponent(company)}&department=${encodeURIComponent(department)}`;
+        }
+
+        function openNav() {
+            document.getElementById("mySidebar").style.width = "250px";
+            document.getElementById("main").style.marginLeft = "250px";
+            document.body.style.backgroundColor = "rgba(0,0,0,0.4)";
+        }
+
+        function closeNav() {
+            document.getElementById("mySidebar").style.width = "0";
+            document.getElementById("main").style.marginLeft = "0";
+            document.body.style.backgroundColor = "white";
+        }
+
+        window.onload = fetchUniqueCompanies;
+    </script>
+</body>
+
+</html>

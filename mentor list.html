@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mentor List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eef2f7;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        li {
+            background: #e0f0ff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 5px solid #007bff;
+            border-radius: 6px;
+        }
+    </style>
+
+    <!-- Firebase scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB6ayuvYzn6KzHUw5BhAC7hHVwGcaN3jZQ",
+            authDomain: "mentor-ad448.firebaseapp.com",
+            projectId: "mentor-ad448",
+            storageBucket: "mentor-ad448.appspot.com",
+            messagingSenderId: "910992811275",
+            appId: "1:910992811275:web:78082d2ec7edf336a26e0e",
+            measurementId: "G-SVLDQT53H9"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h2>All Mentors</h2>
+        <ul id="mentorList"></ul>
+    </div>
+
+    <script>
+        async function fetchMentors() {
+            const snapshot = await db.collection("mentors").get();
+            const list = document.getElementById("mentorList");
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <strong>${data.name}</strong><br>
+                    Domain: ${data.domain}<br>
+                    Mode: ${data.mode}<br>
+                    Availability: ${data.availability}
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        window.onload = fetchMentors;
+    </script>
+</body>
+
+</html>

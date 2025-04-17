@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume Builder</title>
+    <link rel="stylesheet" href="resume.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+    <h1>Resume Builder</h1>
+    <form id="resume-form">
+        <label>Name: <input type="text" id="name" required></label>
+        <label>Email: <input type="email" id="email" required></label>
+        <label>Phone: <input type="text" id="phone" required></label>
+        <label>Address: <input type="text" id="address"></label>
+        <label>LinkedIn: <input type="text" id="linkedin"></label>
+
+        <label>Education:<textarea id="education" rows="5"></textarea></label>
+        <label>Internship:<textarea id="internship" rows="5"></textarea></label>
+        <label>Projects:<textarea id="projects" rows="5"></textarea></label>
+        <label>Skills:<textarea id="skills" rows="3"></textarea></label>
+        <label>Achievements:<textarea id="achievements" rows="3"></textarea></label>
+        <label>Certificates:<textarea id="certificate" rows="3"></textarea></label>
+
+        <label>Upload Photo: <input type="file" id="photo" accept="image/*"></label>
+
+        <button type="button" onclick="generatePDF()">Download Resume PDF</button>
+    </form>
+
+    <script>
+        async function generatePDF() {
+            const {
+                jsPDF
+            } = window.jspdf;
+            const doc = new jsPDF();
+            const margin = 15;
+            let y = 20;
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const linkedin = document.getElementById('linkedin').value;
+            const education = document.getElementById('education').value;
+            const internship = document.getElementById('internship').value;
+            const projects = document.getElementById('projects').value;
+            const skills = document.getElementById('skills').value;
+            const achievements = document.getElementById('achievements').value;
+            const certificate = document.getElementById('certificate').value;
+            const photoInput = document.getElementById('photo');
+            const photoFile = photoInput.files[0];
+
+            function underlineTitle(title) {
+                const titleHeight = 10;
+                if (y + titleHeight > 280) {
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.setFontSize(16);
+                doc.setFont("helvetica", "bold");
+                doc.text(title, margin, y);
+                const width = doc.getTextWidth(title);
+                doc.setLineWidth(0.5);
+                doc.line(margin, y + 1, margin + width, y + 1);
+                y += 7;
+            }
+
+            function addBoxedContent(content) {
+                if (!content) return;
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "normal");
+
+                const lines = doc.splitTextToSize(content, 180);
+                const lineHeight = 7;
+                const boxPadding = 4;
+                const height = lines.length * lineHeight + boxPadding * 2;
+
+                if (y + height > 280) {
+                    doc.addPage();
+                    y = 20;
+                }
+
+                doc.setDrawColor(0);
+                doc.setFillColor(255, 255, 255);
+                doc.rect(margin, y, 180, height, 'S');
+                y += boxPadding;
+
+                lines.forEach(line => {
+                    doc.text(line, margin + 4, y + lineHeight - 1);
+                    y += lineHeight;
+                });
+
+                y += 5;
+            }
+
+            function drawHeader() {
+                doc.setFontSize(22);
+                doc.setFont("helvetica", "bold");
+                doc.text("Resume", 105, y, null, null, "center");
+                y += 15;
+
+                if (photoFile) {
+                    doc.setFontSize(16);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(name, margin + 40, y);
+                    y += 8;
+
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "normal");
+                    doc.text(`Email: ${email}`, margin + 40, y);
+                    y += 6;
+                    doc.text(`Phone: ${phone}`, margin + 40, y);
+                    y += 6;
+                    if (address) {
+                        doc.text(`Address: ${address}`, margin + 40, y);
+                        y += 6;
+                    }
+                    if (linkedin) {
+                        doc.text(`LinkedIn: ${linkedin}`, margin + 40, y);
+                        y += 10;
+                    } else {
+                        y += 10;
+                    }
+                } else {
+                    doc.setFontSize(16);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(name, margin, y);
+                    y += 8;
+
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "normal");
+                    doc.text(`Email: ${email}`, margin, y);
+                    y += 6;
+                    doc.text(`Phone: ${phone}`, margin, y);
+                    y += 6;
+                    if (address) {
+                        doc.text(`Address: ${address}`, margin, y);
+                        y += 6;
+                    }
+                    if (linkedin) {
+                        doc.text(`LinkedIn: ${linkedin}`, margin, y);
+                        y += 10;
+                    } else {
+                        y += 10;
+                    }
+                }
+            }
+
+            function addContent() {
+                underlineTitle("Education");
+                addBoxedContent(education);
+
+                underlineTitle("Internship");
+                addBoxedContent(internship);
+
+                underlineTitle("Projects");
+                addBoxedContent(projects);
+
+                underlineTitle("Skills");
+                addBoxedContent(skills);
+
+                underlineTitle("Achievements");
+                addBoxedContent(achievements);
+
+                underlineTitle("Certificates");
+                addBoxedContent(certificate);
+
+                doc.save(`${name}_Resume.pdf`);
+            }
+
+            if (photoFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgData = e.target.result;
+                    doc.addImage(imgData, "JPEG", margin, y, 30, 40);
+                    drawHeader();
+                    addContent();
+                };
+                reader.readAsDataURL(photoFile);
+            } else {
+                drawHeader();
+                addContent();
+            }
+        }
+    </script>
+</body>
+
+</html>

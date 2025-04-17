@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mentorship Matching</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            margin-top: 15px;
+        }
+        
+        input,
+        select,
+        textarea {
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        button {
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e0ffe0;
+            border: 1px solid #90ee90;
+            border-radius: 5px;
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB6ayuvYzn6KzHUw5BhAC7hHVwGcaN3jZQ",
+            authDomain: "mentor-ad448.firebaseapp.com",
+            projectId: "mentor-ad448",
+            storageBucket: "mentor-ad448.firebasestorage.app",
+            messagingSenderId: "910992811275",
+            appId: "1:910992811275:web:78082d2ec7edf336a26e0e",
+            measurementId: "G-SVLDQT53H9"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Mentorship Matching Form</h2>
+        <form id="matchForm">
+            <label for="name">Student Name:</label>
+            <input type="text" id="name" required>
+
+            <label for="domain">Interested Domain:</label>
+            <select id="domain">
+                <option value="Web Development">Web Development</option>
+                <option value="AI/ML">AI/ML</option>
+                <option value="Data Science">Data Science</option>
+                <option value="Cybersecurity">Cybersecurity</option>
+                <option value="Cloud Computing">Cloud Computing</option>
+            </select>
+
+            <label for="mode">Preferred Communication Mode:</label>
+            <select id="mode">
+                <option value="Email">Email</option>
+                <option value="Video Call">Video Call</option>
+                <option value="Chat">Chat</option>
+            </select>
+
+            <label for="availability">Available Time Slot:</label>
+            <input type="text" id="availability" placeholder="e.g., Weekends, 6-8 PM">
+
+            <button type="submit">Find Mentor</button>
+        </form>
+
+        <div class="result" id="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        document.getElementById('matchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const domain = document.getElementById('domain').value.toLowerCase();
+            const mode = document.getElementById('mode').value.toLowerCase();
+            const availability = document.getElementById('availability').value.toLowerCase();
+            const resultDiv = document.getElementById('result');
+
+            try {
+                const snapshot = await db.collection("mentors").get();
+                let matchFound = false;
+
+                snapshot.forEach(doc => {
+                    const mentor = doc.data();
+                    const mentorDomain = (mentor.domain || '').toLowerCase();
+                    const mentorMode = (mentor.mode || '').toLowerCase();
+                    const mentorAvailability = (mentor.availability || '').toLowerCase();
+
+                    if (
+                        mentorDomain.includes(domain) &&
+                        mentorMode.includes(mode) &&
+                        mentorAvailability.includes(availability)
+                    ) {
+                        resultDiv.innerHTML = `<strong>Matched Mentor:</strong><br>Name: ${mentor.name}<br>Domain: ${mentor.domain}<br>Preferred Mode: ${mentor.mode}<br>Availability: ${mentor.availability}`;
+                        resultDiv.style.display = 'block';
+                        matchFound = true;
+                    }
+                });
+
+                if (!matchFound) {
+                    resultDiv.innerHTML = `<strong>No match found. Try different keywords or check with admin.</strong>`;
+                    resultDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error("Error fetching mentor data:", error);
+                resultDiv.innerHTML = `<strong>Error loading mentor data.</strong>`;
+                resultDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

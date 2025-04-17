@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post a Job</title>
+    <link rel="stylesheet" href="postjob.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Post a Job</h1>
+        <form id="jobForm">
+            <label>Full Name:</label>
+            <input type="text" id="fullName" required>
+
+            <label>Batch:</label>
+            <input type="text" id="batch" required>
+
+            <label>Department:</label>
+            <input type="text" id="department" required>
+
+            <label>Email:</label>
+            <input type="email" id="email" required>
+
+            <label>Contact:</label>
+            <input type="text" id="contact" required>
+
+            <label>Company:</label>
+            <input type="text" id="company" required>
+
+            <label>Location:</label>
+            <input type="text" id="location" required>
+
+            <label>Distengnation:</label>
+            <input type="text" id="distengnation" required>
+
+            <label>Salary (LPA):</label>
+            <input type="text" id="salary" required>
+
+            <label>LinkedIn Profile:</label>
+            <input type="url" id="linkedIn" required>
+
+            <button type="button" onclick="postJob()">Post Job</button>
+            <p id="loadingMessage" style="color: blue;"></p>
+        </form>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAiSIvkXHbc7DMWXctMCR240lY3QTo3DPI",
+            authDomain: "alumini-project-92d35.firebaseapp.com",
+            projectId: "alumini-project-92d35",
+            storageBucket: "alumini-project-92d35.appspot.com",
+            messagingSenderId: "824256308559",
+            appId: "1:824256308559:web:e3301cc6e36b381a7cd13a",
+            measurementId: "G-VPN8QGJTGY"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // Function to Handle Job Posting
+        function postJob() {
+            const fullName = document.getElementById("fullName").value;
+            const batch = document.getElementById("batch").value;
+            const department = document.getElementById("department").value;
+            const email = document.getElementById("email").value;
+            const contact = document.getElementById("contact").value;
+            const company = document.getElementById("company").value;
+            const location = document.getElementById("location").value;
+            const distengnation = document.getElementById("distengnation").value;
+            const salary = document.getElementById("salary").value;
+            const linkedIn = document.getElementById("linkedIn").value;
+            const loadingMessage = document.getElementById("loadingMessage");
+
+            // Basic input validation
+            if (!fullName || !batch || !department || !email || !contact || !company || !location || !distengnation || !salary || !linkedIn) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            loadingMessage.innerText = "Uploading Details....";
+
+            // Store job details in Firestore
+            db.collection("jobs").add({
+                    fullName,
+                    batch,
+                    department,
+                    email,
+                    contact,
+                    company,
+                    location,
+                    distengnation,
+                    salary,
+                    linkedIn,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                })
+                .then(() => {
+                    alert("Student Details posted successfully!");
+                    loadingMessage.innerText = "";
+                    window.location.reload();
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                    alert("Failed to update. Check console for errors.");
+                    loadingMessage.innerText = "";
+                });
+        }
+    </script>
+</body>
+
+</html>

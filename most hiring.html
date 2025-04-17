@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Most Hiring Companies</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex; /* Use flexbox to arrange sidebar and chart */
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #f0f0f0;
+            padding: 20px;
+            box-sizing: border-box;
+            height: 100vh;
+            overflow-y: auto; /* Enable scrolling if company list is long */
+        }
+
+        .chart-container {
+            flex-grow: 1; /* Allow chart container to take remaining space */
+            margin: 20px;
+            height: 400px;
+        }
+
+        .company-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .company-list li {
+            margin-bottom: 10px;
+            padding: 8px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .company-list li:hover {
+            background-color: #d0d0d0;
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h2>Hiring Companies</h2>
+        <ul class="company-list" id="companyList">
+            </ul>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="hiringChart"></canvas>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAiSIvkXHbc7DMWXctMCR240lY3QTo3DPI",
+            authDomain: "alumini-project-92d35.firebaseapp.com",
+            projectId: "alumini-project-92d35",
+            storageBucket: "alumini-project-92d35.appspot.com",
+            messagingSenderId: "824256308559",
+            appId: "1:824256308559:web:e3301cc6e36b381a7cd13a",
+            measurementId: "G-VPN8QGJTGY"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function createHiringChart() {
+            db.collection("jobs").get()
+                .then((querySnapshot) => {
+                    const companyHires = {};
+                    querySnapshot.forEach((doc) => {
+                        const jobData = doc.data();
+                        if (jobData.company) {
+                            if (!companyHires[jobData.company]) {
+                                companyHires[jobData.company] = 0;
+                            }
+                            companyHires[jobData.company]++;
+                        }
+                    });
+
+                    const labels = [];
+                    const hireCounts = [];
+                    const backgroundColors = [];
+
+                    for (const company in companyHires) {
+                        labels.push(company);
+                        hireCounts.push(companyHires[company]);
+                        backgroundColors.push(getRandomColor());
+                    }
+
+                    const ctx = document.getElementById('hiringChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Hiring Companies',
+                                data: hireCounts,
+                                backgroundColor: backgroundColors,
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                        }
+                    });
+
+                    populateCompanyList(Object.keys(companyHires)); // Populate sidebar list
+                })
+                .catch((error) => {
+                    console.error("Error fetching job data: ", error);
+                    document.getElementById('hiringChart').innerHTML = `<p>Error loading hiring data.</p>`;
+                });
+        }
+
+        function populateCompanyList(companies) {
+            const companyList = document.getElementById('companyList');
+            companies.forEach(company => {
+                const listItem = document.createElement('li');
+                listItem.textContent = company;
+                companyList.appendChild(listItem);
+            });
+        }
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        window.onload = createHiringChart;
+    </script>
+</body>
+
+</html>

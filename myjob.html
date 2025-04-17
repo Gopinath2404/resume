@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Jobs</title>
+    <link rel="stylesheet" href="myjob.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <center>
+            <h1>Student Details</h1>
+        </center>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Batch</th>
+                    <th>Department</th>
+                    <th>Email</th>
+                    <th>Contact</th>
+                    <th>Company</th>
+                    <th>Location</th>
+                    <th>Distengnation</th>
+                    <th>Salary (LPA)</th>
+                    <th>LinkedIn</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="myJobsTableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAiSIvkXHbc7DMWXctMCR240lY3QTo3DPI",
+            authDomain: "alumini-project-92d35.firebaseapp.com",
+            projectId: "alumini-project-92d35",
+            messagingSenderId: "824256308559",
+            appId: "1:824256308559:web:e3301cc6e36b381a7cd13a",
+            measurementId: "G-VPN8QGJTGY"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function fetchJobs() {
+            const myJobsTableBody = document.getElementById('myJobsTableBody');
+            myJobsTableBody.innerHTML = '';
+
+            db.collection('jobs').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+                myJobsTableBody.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const job = doc.data();
+                    const row = myJobsTableBody.insertRow();
+
+                    row.innerHTML = `
+                        <td>${job.fullName || 'N/A'}</td>
+                        <td>${job.batch || 'N/A'}</td>
+                        <td>${job.department || 'N/A'}</td>
+                        <td>${job.email || 'N/A'}</td>
+                        <td>${job.contact || 'N/A'}</td>
+                        <td>${job.company || 'N/A'}</td>
+                        <td>${job.location || 'N/A'}</td>
+                        <td>${job.distengnation || 'N/A'}</td>
+                        <td>${job.salary || 'N/A'}</td>
+                        <td><a href="${job.linkedIn}" target="_blank">View Profile</a></td>
+                        <td>
+                            <button onclick="deleteJob('${doc.id}')">Delete</button>
+                            <button onclick="updateJob('${doc.id}', '${job.fullName}', '${job.batch}', '${job.department}', '${job.email}', '${job.contact}', '${job.company}', '${job.location}', '${job.distengnation}', '${job.salary}', '${job.linkedIn}')">Update</button>
+                        </td>
+                    `;
+                });
+            }, (error) => {
+                console.error("Error fetching jobs:", error);
+            });
+        }
+
+        function deleteJob(jobId) {
+            if (confirm("Are you sure you want to delete this job?")) {
+                db.collection('jobs').doc(jobId).delete()
+                    .then(() => {
+                        alert('Student Details deleted successfully.');
+                    })
+                    .catch((error) => {
+                        console.error("Error deleting job:", error);
+                        alert('Failed to delete job.');
+                    });
+            }
+        }
+
+        function updateJob(jobId, fullName, batch, department, email, contact, company, location, distengnation, salary, linkedIn) {
+            const newFullName = prompt("Enter new Full Name:", fullName);
+            const newBatch = prompt("Enter new Batch:", batch);
+            const newDepartment = prompt("Enter new Department:", department);
+            const newEmail = prompt("Enter new Email:", email);
+            const newContact = prompt("Enter new Contact:", contact);
+            const newCompany = prompt("Enter new Company:", company);
+            const newLocation = prompt("Enter new Location:", location);
+            const newDistengnation = prompt("Enter new Distengnation:", distengnation);
+            const newSalary = prompt("Enter new Salary (LPA):", salary);
+            const newLinkedIn = prompt("Enter new LinkedIn Profile:", linkedIn);
+
+            if (newFullName && newBatch && newDepartment && newEmail && newContact && newCompany && newLocation && newDistengnation && newSalary && newLinkedIn) {
+                db.collection("jobs").doc(jobId).update({
+                    fullName: newFullName,
+                    batch: newBatch,
+                    department: newDepartment,
+                    email: newEmail,
+                    contact: newContact,
+                    company: newCompany,
+                    location: newLocation,
+                    distengnation: newDistengnation,
+                    salary: newSalary,
+                    linkedIn: newLinkedIn
+                }).then(() => {
+                    alert("Student Details updated successfully!");
+                }).catch((error) => {
+                    console.error("Error updating job:", error);
+                    alert("Failed to update job.");
+                });
+            }
+        }
+
+        // Fetch jobs on page load
+        window.onload = fetchJobs;
+    </script>
+</body>
+
+</html>

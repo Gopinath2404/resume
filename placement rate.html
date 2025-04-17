@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placement Rate Pie Chart</title>
+    <link rel="stylesheet" href="placement rate.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div>
+        <label for="batchSelect">Select Batch:</label>
+        <select id="batchSelect" onchange="updateChart()">
+            <option value="">All Batches</option>
+        </select>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="placementChart"></canvas>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAiSIvkXHbc7DMWXctMCR240lY3QTo3DPI",
+            authDomain: "alumini-project-92d35.firebaseapp.com",
+            projectId: "alumini-project-92d35",
+            storageBucket: "alumini-project-92d35.appspot.com",
+            messagingSenderId: "824256308559",
+            appId: "1:824256308559:web:e3301cc6e36b381a7cd13a",
+            measurementId: "G-VPN8QGJTGY"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let myChart;
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function updateChart() {
+            const selectedBatch = document.getElementById('batchSelect').value;
+            db.collection("jobs").get()
+                .then((querySnapshot) => {
+                    const placedStudents = {};
+                    querySnapshot.forEach((doc) => {
+                        const jobData = doc.data();
+                        if (jobData.batch && jobData.company) {
+                            if (!placedStudents[jobData.batch]) {
+                                placedStudents[jobData.batch] = 0;
+                            }
+                            placedStudents[jobData.batch]++;
+                        }
+                    });
+
+                    const labels = [];
+                    const placedCounts = [];
+                    const backgroundColors = [];
+
+                    if (selectedBatch === "") {
+                        for (const batch in placedStudents) {
+                            labels.push(batch);
+                            placedCounts.push(placedStudents[batch]);
+                            backgroundColors.push(getRandomColor());
+                        }
+                    } else {
+                        if (placedStudents[selectedBatch]) {
+                            labels.push(selectedBatch);
+                            placedCounts.push(placedStudents[selectedBatch]);
+                            backgroundColors.push(getRandomColor());
+                        } else {
+                            document.getElementById('placementChart').innerHTML = "<p>No placed students for the selected batch</p>";
+                            if (myChart) {
+                                myChart.destroy();
+                                myChart = null;
+                            }
+                            return;
+                        }
+                    }
+
+                    const ctx = document.getElementById('placementChart').getContext('2d');
+
+                    if (myChart) {
+                        myChart.destroy();
+                    }
+
+                    myChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Placement Distribution',
+                                data: placedCounts,
+                                backgroundColor: backgroundColors,
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error fetching job data: ", error);
+                    document.getElementById('placementChart').innerHTML = `<p>Error loading placement data.</p>`;
+                });
+        }
+
+        function populateBatchSelect() {
+            db.collection("jobs").get()
+                .then((querySnapshot) => {
+                    const batches = new Set();
+                    querySnapshot.forEach((doc) => {
+                        const jobData = doc.data();
+                        if (jobData.batch) {
+                            batches.add(jobData.batch);
+                        }
+                    });
+
+                    const select = document.getElementById('batchSelect');
+                    batches.forEach((batch) => {
+                        const option = document.createElement('option');
+                        option.value = batch;
+                        option.textContent = batch;
+                        select.appendChild(option);
+                    });
+                    updateChart();
+                })
+                .catch((error) => {
+                    console.error("Error fetching batches: ", error);
+                });
+        }
+
+        window.onload = populateBatchSelect;
+    </script>
+</body>
+
+</html>

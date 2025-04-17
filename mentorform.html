@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mentor Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2,
+        h3 {
+            text-align: center;
+            color: #333;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            margin-top: 15px;
+        }
+        
+        input,
+        select,
+        textarea {
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        button {
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        #mentorList {
+            margin-top: 30px;
+            list-style: none;
+            padding: 0;
+        }
+        
+        #mentorList li {
+            background: #e7f1ff;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB6ayuvYzn6KzHUw5BhAC7hHVwGcaN3jZQ",
+            authDomain: "mentor-ad448.firebaseapp.com",
+            projectId: "mentor-ad448",
+            storageBucket: "mentor-ad448.appspot.com",
+            messagingSenderId: "910992811275",
+            appId: "1:910992811275:web:78082d2ec7edf336a26e0e",
+            measurementId: "G-SVLDQT53H9"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Mentor Details Form</h2>
+        <form id="mentorForm">
+            <label for="mentorName">Mentor Name:</label>
+            <input type="text" id="mentorName" required>
+
+            <label for="mentorDomain">Domain:</label>
+            <select id="mentorDomain" required>
+                <option value="">--Select--</option>
+                <option value="Web Development">Web Development</option>
+                <option value="AI/ML">AI/ML</option>
+                <option value="Data Science">Data Science</option>
+                <option value="Cybersecurity">Cybersecurity</option>
+                <option value="Cloud Computing">Cloud Computing</option>
+            </select>
+
+            <label for="mentorMode">Preferred Mode:</label>
+            <select id="mentorMode" required>
+                <option value="">--Select--</option>
+                <option value="Email">Email</option>
+                <option value="Video Call">Video Call</option>
+                <option value="Chat">Chat</option>
+            </select>
+
+            <label for="mentorAvailability">Availability:</label>
+            <input type="text" id="mentorAvailability" placeholder="e.g., Weekdays, 3-5 PM" required>
+
+            <button type="button" onclick="addMentor()">Add Mentor</button>
+        </form>
+
+        <h3>Mentor List</h3>
+        <ul id="mentorList"></ul>
+    </div>
+
+    <script>
+        async function addMentor() {
+            const mentorName = document.getElementById('mentorName').value;
+            const mentorDomain = document.getElementById('mentorDomain').value;
+            const mentorMode = document.getElementById('mentorMode').value;
+            const mentorAvailability = document.getElementById('mentorAvailability').value;
+
+            try {
+                const docRef = await db.collection("mentors").add({
+                    name: mentorName,
+                    domain: mentorDomain,
+                    mode: mentorMode,
+                    availability: mentorAvailability
+                });
+
+                alert("Mentor added successfully!");
+                document.getElementById('mentorForm').reset();
+
+                // Show mentor on page
+                displayMentor({
+                    id: docRef.id,
+                    name: mentorName,
+                    domain: mentorDomain,
+                    mode: mentorMode,
+                    availability: mentorAvailability
+                });
+
+            } catch (error) {
+                console.error("Error adding mentor:", error);
+                alert("Error adding mentor. Please try again.");
+            }
+        }
+
+        function displayMentor(mentor) {
+            const mentorList = document.getElementById('mentorList');
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <strong>${mentor.name}</strong><br>
+                Domain: ${mentor.domain}<br>
+                Mode: ${mentor.mode}<br>
+                Availability: ${mentor.availability}
+            `;
+            mentorList.appendChild(li);
+        }
+
+        // Load existing mentors on page load
+        window.onload = async function() {
+            const snapshot = await db.collection("mentors").get();
+            snapshot.forEach(doc => {
+                displayMentor({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+        };
+    </script>
+</body>
+
+</html>

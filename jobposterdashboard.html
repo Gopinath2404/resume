@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Poster Dashboard</title>
+    <link rel="stylesheet" href="jobposterdashboard.css">
+    <!-- Link to CSS -->
+    <script defer src="jobposterdashboard.js"></script>
+    <!-- Link to JavaScript -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Dashboard</h2>
+                <button class="menu-toggle" id="menu-toggle">☰</button>
+            </div>
+            <ul class="nav-links">
+                <li><a href="postjob.html" onclick="navigate('post-job')">📌 Application</a></li>
+                <li><a href="myjobs.html" onclick="navigate('my-jobs')">📋 Student Details</a></li>
+                <li><a href="mentorform.html" onclick="navigate('mentor-form')">📋 mentor form</a></li>
+                <li><a href="mentor list.html" onclick="navigate('mentor-form')">📋 mentor list</a></li>
+                <li><a href="womenjob.html" onclick="navigate('womenjob')">🚪 Logout</a></li>
+            </ul>
+        </nav>
+
+        <!-- -------Main Content Area------- -->
+        <main class="content" id="content">
+            <center>
+                < <h1>Welcome to Your Dashboard</h1>
+                    <p>Select an option from the sidebar to get started.</p>
+            </center>
+        </main>
+    </div>
+
+</body>
+
+</html>
